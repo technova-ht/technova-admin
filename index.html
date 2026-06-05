@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Bootcamp TECHNOVA</title>
+    <link rel="stylesheet" href="admin.css">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Supabase JS -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+<div id="app-container">
+    <!-- Login Section -->
+    <section id="login-section" class="active">
+        <div class="login-card">
+            <h2>🔒 Accès Administrateur</h2>
+            <p>Veuillez vous connecter pour gérer les inscriptions.</p>
+            <form id="loginForm">
+                <div class="input-group">
+                    <label for="adminEmail">Email</label>
+                    <div class="input-wrapper">
+                        <i data-lucide="mail"></i>
+                        <input type="email" id="adminEmail" placeholder="admin@technova.com" required>
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label for="adminPassword">Mot de passe</label>
+                    <div class="input-wrapper">
+                        <i data-lucide="lock"></i>
+                        <input type="password" id="adminPassword" placeholder="••••••••" required>
+                        <button type="button" id="togglePassword" style="position: absolute; right: 12px; background: none; border: none; color: #64748b; cursor: pointer; padding: 0;">
+                            <i data-lucide="eye"></i>
+                        </button>
+                    </div>
+                </div>
+                <button type="submit" class="btn-primary" id="loginBtn">
+                    <span>Se connecter</span>
+                </button>
+                <p id="loginError" class="error-text"></p>
+            </form>
+        </div>
+    </section>
+
+    <!-- Dashboard Section -->
+    <section id="dashboard-section" class="hidden">
+        <!-- Mobile Header -->
+        <header class="mobile-header">
+            <div class="sidebar-logo">
+                <i data-lucide="zap"></i>
+                <span>TECHNOVA</span>
+            </div>
+            <button class="menu-toggle" id="menuToggle">
+                <i data-lucide="menu"></i>
+            </button>
+        </header>
+
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-logo">
+                <i data-lucide="zap"></i>
+                <span>TECHNOVA</span>
+            </div>
+            
+            <nav class="nav-menu">
+                <button class="nav-item active" data-page="page-inscriptions">
+                    <i data-lucide="users"></i>
+                    <span>Inscriptions</span>
+                </button>
+                <button class="nav-item" data-page="page-analytiques">
+                    <i data-lucide="bar-chart-3"></i>
+                    <span>Analytiques</span>
+                </button>
+                <button class="nav-item" data-page="page-parametres">
+                    <i data-lucide="settings"></i>
+                    <span>Paramètres</span>
+                </button>
+            </nav>
+
+            <div class="sidebar-footer">
+                <button type="button" class="btn-primary" style="background: rgba(255,255,255,0.05); color: #94a3b8;" onclick="logout()">
+                    <i data-lucide="log-out"></i>
+                    <span>Déconnexion</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- PAGE: Inscriptions -->
+            <div id="page-inscriptions" class="dashboard-page active">
+                <div class="header-bar">
+                    <div class="header-title">
+                        <h2>Dashboard Inscriptions</h2>
+                        <p>Gérez et suivez les nouvelles candidatures au bootcamp.</p>
+                    </div>
+                </div>
+
+                <!-- Stats Overview -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon blue">
+                            <i data-lucide="users"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3>Total Inscrits</h3>
+                            <p id="totalCount">0</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon green">
+                            <i data-lucide="user-check"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3>Nouveaux (24h)</h3>
+                            <p id="newCount">0</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Table Card -->
+                <div class="table-card">
+                    <div class="table-header">
+                        <h3 style="font-size: 1.1rem; font-weight: 600;">Liste des Candidats</h3>
+                        <button class="btn-primary" style="width: auto; padding: 8px 16px; font-size: 0.85rem;" onclick="fetchRegistrations()">
+                            <i data-lucide="refresh-cw" style="width: 16px;"></i>
+                            <span>Actualiser</span>
+                        </button>
+                    </div>
+                    <div class="table-container">
+                        <table id="registrationsTable">
+                            <thead>
+                                <tr>
+                                    <th>Candidat</th>
+                                    <th>Contact</th>
+                                    <th>Domaines</th>
+                                    <th>Expérience</th>
+                                    <th>Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tableBody">
+                                <!-- Data injected here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PAGE: Analytiques -->
+            <div id="page-analytiques" class="dashboard-page">
+                <div class="header-bar">
+                    <div class="header-title">
+                        <h2>Analytiques</h2>
+                        <p>Visualisez les tendances et la distribution des inscriptions.</p>
+                    </div>
+                </div>
+
+                <div class="analytics-grid">
+                    <div class="chart-card">
+                        <h3>Distribution par Domaines</h3>
+                        <div class="chart-container">
+                            <canvas id="domainsChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="chart-card">
+                        <h3>Niveau d'Expérience</h3>
+                        <div class="chart-container">
+                            <canvas id="experienceChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PAGE: Paramètres -->
+            <div id="page-parametres" class="dashboard-page">
+                <div class="header-bar">
+                    <div class="header-title">
+                        <h2>Paramètres</h2>
+                        <p>Gérez vos préférences et consultez les informations système.</p>
+                    </div>
+                </div>
+
+                <div class="settings-container">
+                    <div class="settings-group">
+                        <h3><i data-lucide="user"></i> Mon Profil</h3>
+                        <div class="settings-row">
+                            <span class="settings-label">Email Administrateur</span>
+                            <span class="settings-value" id="adminEmailDisplay">---</span>
+                        </div>
+                        <div class="settings-row">
+                            <span class="settings-label">Rôle</span>
+                            <span class="settings-value">Super Administrateur</span>
+                        </div>
+                    </div>
+
+                    <div class="settings-group">
+                        <h3><i data-lucide="server"></i> État du Système</h3>
+                        <div class="settings-row">
+                            <span class="settings-label">Base de données (Supabase)</span>
+                            <div class="status-indicator">
+                                <span class="status-dot online"></span>
+                                <span class="settings-value">Connecté</span>
+                            </div>
+                        </div>
+                        <div class="settings-row">
+                            <span class="settings-label">Version du Dashboard</span>
+                            <span class="settings-value">v2.1.0-premium</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </section>
+</div>
+
+<!-- Initialization script for Lucide icons -->
+<script>
+    lucide.createIcons();
+</script>
+<script type="module" src="admin.js"></script>
+</body>
+</html>
