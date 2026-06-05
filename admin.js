@@ -17,6 +17,10 @@ const togglePasswordBtn = document.getElementById('togglePassword');
 const adminPasswordInput = document.getElementById('adminPassword');
 const adminEmailDisplay = document.getElementById('adminEmailDisplay');
 
+const refreshReBtn = document.querySelector('.refreshReBtn')
+
+
+refreshReBtn.addEventListener('click',fetchRegistrations)
 // Global Chart Instances
 let domainsChart = null;
 let experienceChart = null;
